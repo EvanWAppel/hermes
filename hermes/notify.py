@@ -19,6 +19,7 @@ def email_on_failure(
     markdown: Optional[os.PathLike[str] | str] = None,
     retries: int = 1,
     delay: float = 60,
+
 ) -> Callable:
     """Decorator to send an email if the wrapped function raises an exception.
 
@@ -32,11 +33,13 @@ def email_on_failure(
         Path to a Markdown template used to format the email body. The file
         may reference ``{function}``, ``{start}``, ``{fail_time}``,
         ``{machine}``, ``{user}``, ``{error}``, and ``{traceback}``.
+
     retries: int, optional
         Number of times to retry ``func`` after an exception. Defaults to one
         additional attempt.
     delay: float, optional
         Seconds to wait between retries. Defaults to 60 seconds.
+
     """
 
     template = Path(markdown).read_text() if markdown else None
@@ -44,6 +47,7 @@ def email_on_failure(
     def decorator(func: Callable) -> Callable:
         def wrapper(*args, **kwargs):
             start = datetime.now()
+
             attempts = 0
             while True:
                 try:
@@ -99,6 +103,7 @@ def email_on_failure(
                         raise
                     attempts += 1
                     time.sleep(delay)
+
 
         return wrapper
 

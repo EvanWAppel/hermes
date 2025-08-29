@@ -18,6 +18,7 @@ def test_email_sent_on_failure():
     with patch("hermes.notify.smtplib.SMTP") as smtp, patch(
         "hermes.notify.time.sleep"
     ):
+
         with pytest.raises(RuntimeError):
             explode()
         smtp.assert_called_with("localhost")
@@ -32,7 +33,9 @@ def test_outlook_api_used_when_token_present():
     with patch.dict(os.environ, {"OUTLOOK_TOKEN": "token"}, clear=True):
         with patch("hermes.notify.urllib.request.urlopen") as urlopen, patch(
             "hermes.notify.smtplib.SMTP"
+
         ) as smtp, patch("hermes.notify.time.sleep"):
+
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             with pytest.raises(RuntimeError):
                 explode()
@@ -50,9 +53,11 @@ def test_markdown_template_used(tmp_path):
     def explode():
         raise RuntimeError("boom")
 
+
     with patch("hermes.notify._send_mail") as send_mail, patch(
         "hermes.notify.time.sleep"
     ):
+
         with pytest.raises(RuntimeError):
             explode()
         body = send_mail.call_args[0][3]
@@ -70,7 +75,9 @@ def test_teams_notification_when_webhook_present():
     ):
         with patch("hermes.notify.urllib.request.urlopen") as urlopen, patch(
             "hermes.notify.smtplib.SMTP"
+
         ) as smtp, patch("hermes.notify.time.sleep"):
+
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             with pytest.raises(RuntimeError):
                 explode()
@@ -93,12 +100,15 @@ def test_jira_ticket_when_configured():
     with patch.dict(os.environ, env, clear=True):
         with patch("hermes.notify.urllib.request.urlopen") as urlopen, patch(
             "hermes.notify.smtplib.SMTP"
+
         ) as smtp, patch("hermes.notify.time.sleep"):
+
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             with pytest.raises(RuntimeError):
                 explode()
             urlopen.assert_called_once()
             smtp.assert_called_with("localhost")
+
 
 
 def test_retry_succeeds_without_email():
@@ -132,3 +142,4 @@ def test_retry_exhausted_sends_email():
             explode()
         assert sleep.call_count == 2
         send_mail.assert_called_once()
+
