@@ -18,11 +18,11 @@ def test_email_sent_on_failure():
     with patch("hermes.notify.smtplib.SMTP") as smtp, patch(
         "hermes.notify.time.sleep"
     ):
+
         with pytest.raises(RuntimeError):
             explode()
         smtp.assert_called_with("localhost")
         smtp.return_value.__enter__.return_value.sendmail.assert_called_once()
-
 
 def test_email_sent_on_success():
     @email_on_failure("from@example.com", "to@example.com")
@@ -33,7 +33,6 @@ def test_email_sent_on_success():
         assert succeed() == "ok"
         send_mail.assert_called_once()
 
-
 def test_outlook_api_used_when_token_present():
     @email_on_failure("from@example.com", "to@example.com")
     def explode():
@@ -42,7 +41,9 @@ def test_outlook_api_used_when_token_present():
     with patch.dict(os.environ, {"OUTLOOK_TOKEN": "token"}, clear=True):
         with patch("hermes.notify.urllib.request.urlopen") as urlopen, patch(
             "hermes.notify.smtplib.SMTP"
+
         ) as smtp, patch("hermes.notify.time.sleep"):
+
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             with pytest.raises(RuntimeError):
                 explode()
@@ -63,6 +64,7 @@ def test_markdown_template_used(tmp_path):
     with patch("hermes.notify._send_mail") as send_mail, patch(
         "hermes.notify.time.sleep"
     ):
+
         with pytest.raises(RuntimeError):
             explode()
         body = send_mail.call_args[0][3]
@@ -80,14 +82,15 @@ def test_teams_notification_when_webhook_present():
     ):
         with patch("hermes.notify.urllib.request.urlopen") as urlopen, patch(
             "hermes.notify.smtplib.SMTP"
+
         ) as smtp, patch("hermes.notify.time.sleep"):
+
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             with pytest.raises(RuntimeError):
                 explode()
             urlopen.assert_called_once()
             smtp.assert_called_with("localhost")
-
-
+            
 def test_teams_notification_on_success():
     @email_on_failure("from@example.com", "to@example.com")
     def succeed():
@@ -102,7 +105,6 @@ def test_teams_notification_on_success():
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             assert succeed() == "ok"
             urlopen.assert_called_once()
-
 
 def test_jira_ticket_when_configured():
     @email_on_failure("from@example.com", "to@example.com")
@@ -119,15 +121,17 @@ def test_jira_ticket_when_configured():
     with patch.dict(os.environ, env, clear=True):
         with patch("hermes.notify.urllib.request.urlopen") as urlopen, patch(
             "hermes.notify.smtplib.SMTP"
+
         ) as smtp, patch("hermes.notify.time.sleep"):
+
             urlopen.return_value.__enter__.return_value.read.return_value = b""
             with pytest.raises(RuntimeError):
                 explode()
             urlopen.assert_called_once()
             smtp.assert_called_with("localhost")
 
-
 def test_retry_succeeds_sends_email():
+
     calls = {"count": 0}
 
     @email_on_failure("from@example.com", "to@example.com", retries=1, delay=1)
@@ -142,7 +146,9 @@ def test_retry_succeeds_sends_email():
     ) as sleep:
         assert sometimes() == "ok"
         assert calls["count"] == 2
+
         send_mail.assert_called_once()
+
         sleep.assert_called_once_with(1)
 
 
@@ -158,3 +164,4 @@ def test_retry_exhausted_sends_email():
             explode()
         assert sleep.call_count == 2
         send_mail.assert_called_once()
+

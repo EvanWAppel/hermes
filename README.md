@@ -1,7 +1,9 @@
 # hermes
 
+
 Hermes provides a decorator that emails a notification when a wrapped function
 completes, indicating success or failure.
+
 
 ## Usage
 
@@ -13,10 +15,12 @@ def my_task():
     ...
 ```
 
+
 The email includes the start and completion times, machine name and user. On
 failure the error message and traceback are included, and the subject line is
 "[parent directory] has failed.". On success the subject line is "[parent
 directory] has succeeded.".
+
 
 A Markdown template can be supplied to customize the email body:
 
@@ -31,6 +35,7 @@ def my_task():
 The template may reference `{function}`, `{start}`, `{fail_time}`, `{machine}`,
 `{user}`, `{error}`, and `{traceback}`.
 
+
 The decorator retries once after 60 seconds by default. To control retry
 behavior, supply ``retries`` and ``delay`` in seconds:
 
@@ -41,6 +46,7 @@ behavior, supply ``retries`` and ``delay`` in seconds:
 def my_task():
     ...
 ```
+
 
 By default a local SMTP server on `localhost` is used to deliver messages. If an
 Outlook token is supplied via the ``OUTLOOK_TOKEN`` environment variable, the
