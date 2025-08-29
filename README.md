@@ -28,6 +28,19 @@ def my_task():
 The template may reference `{function}`, `{start}`, `{fail_time}`, `{machine}`,
 `{user}`, `{error}`, and `{traceback}`.
 
+
+The decorator retries once after 60 seconds by default. To control retry
+behavior, supply ``retries`` and ``delay`` in seconds:
+
+```python
+@email_on_failure(
+    "origin@example.com", "dest@example.com", retries=3, delay=30
+)
+def my_task():
+    ...
+```
+
+
 By default a local SMTP server on `localhost` is used to deliver messages. If an
 Outlook token is supplied via the ``OUTLOOK_TOKEN`` environment variable, the
 Microsoft Outlook API is used instead.
