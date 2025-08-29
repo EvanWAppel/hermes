@@ -24,6 +24,14 @@ def test_email_sent_on_failure():
         smtp.assert_called_with("localhost")
         smtp.return_value.__enter__.return_value.sendmail.assert_called_once()
 
+def test_email_sent_on_success():
+    @email_on_failure("from@example.com", "to@example.com")
+    def succeed():
+        return "ok"
+
+    with patch("hermes.notify._send_mail") as send_mail:
+        assert succeed() == "ok"
+        send_mail.assert_called_once()
 
 def test_outlook_api_used_when_token_present():
     @email_on_failure("from@example.com", "to@example.com")
@@ -52,7 +60,6 @@ def test_markdown_template_used(tmp_path):
     )
     def explode():
         raise RuntimeError("boom")
-
 
     with patch("hermes.notify._send_mail") as send_mail, patch(
         "hermes.notify.time.sleep"
@@ -83,7 +90,21 @@ def test_teams_notification_when_webhook_present():
                 explode()
             urlopen.assert_called_once()
             smtp.assert_called_with("localhost")
+            
+def test_teams_notification_on_success():
+    @email_on_failure("from@example.com", "to@example.com")
+    def succeed():
+        return "ok"
 
+    with patch.dict(
+        os.environ, {"TEAMS_WEBHOOK": "https://example.com/webhook"}, clear=True
+    ):
+        with patch("hermes.notify._send_mail"), patch(
+            "hermes.notify.urllib.request.urlopen"
+        ) as urlopen:
+            urlopen.return_value.__enter__.return_value.read.return_value = b""
+            assert succeed() == "ok"
+            urlopen.assert_called_once()
 
 def test_jira_ticket_when_configured():
     @email_on_failure("from@example.com", "to@example.com")
@@ -109,9 +130,8 @@ def test_jira_ticket_when_configured():
             urlopen.assert_called_once()
             smtp.assert_called_with("localhost")
 
+def test_retry_succeeds_sends_email():
 
-
-def test_retry_succeeds_without_email():
     calls = {"count": 0}
 
     @email_on_failure("from@example.com", "to@example.com", retries=1, delay=1)
@@ -126,7 +146,9 @@ def test_retry_succeeds_without_email():
     ) as sleep:
         assert sometimes() == "ok"
         assert calls["count"] == 2
-        send_mail.assert_not_called()
+
+        send_mail.assert_called_once()
+
         sleep.assert_called_once_with(1)
 
 

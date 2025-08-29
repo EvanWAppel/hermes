@@ -19,9 +19,9 @@ def email_on_failure(
     markdown: Optional[os.PathLike[str] | str] = None,
     retries: int = 1,
     delay: float = 60,
-
 ) -> Callable:
-    """Decorator to send an email if the wrapped function raises an exception.
+    """Decorator to send email notifications on success or failure.
+
 
     Parameters
     ----------
@@ -51,7 +51,37 @@ def email_on_failure(
             attempts = 0
             while True:
                 try:
-                    return func(*args, **kwargs)
+                    result = func(*args, **kwargs)
+                    end = datetime.now()
+                    machine = socket.gethostname()
+                    user = getpass.getuser()
+                    file_path = Path(inspect.getfile(func)).resolve()
+                    parent_dir = file_path.parent.name
+                    subject = f"{parent_dir} has succeeded."
+                    context = {
+                        "function": func.__name__,
+                        "start": start.isoformat(),
+                        "fail_time": end.isoformat(),
+                        "machine": machine,
+                        "user": user,
+                        "error": "",
+                        "traceback": "",
+                    }
+                    if template is not None:
+                        body = template.format(**context)
+                    else:
+                        body = (
+                            f"Function {func.__name__} initiated at {start.isoformat()}\n"
+                            f"Completed at {end.isoformat()}\n"
+                            f"Machine: {machine}\n"
+                            f"User: {user}"
+                        )
+                    _send_mail(origin, destination, subject, body)
+                    webhook = os.getenv("TEAMS_WEBHOOK")
+                    if webhook:
+                        _send_to_teams(webhook, subject, body)
+                    return result
+
                 except Exception as exc:  # pragma: no cover - network call
                     if attempts >= retries:
                         fail_time = datetime.now()

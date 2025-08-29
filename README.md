@@ -1,6 +1,9 @@
 # hermes
 
-Hermes provides a decorator that emails a notification when a wrapped function fails.
+
+Hermes provides a decorator that emails a notification when a wrapped function
+completes, indicating success or failure.
+
 
 ## Usage
 
@@ -12,8 +15,12 @@ def my_task():
     ...
 ```
 
-The email includes the start and failure times, machine name, user, error message and traceback.
-The subject line is "[parent directory] has failed.".
+
+The email includes the start and completion times, machine name and user. On
+failure the error message and traceback are included, and the subject line is
+"[parent directory] has failed.". On success the subject line is "[parent
+directory] has succeeded.".
+
 
 A Markdown template can be supplied to customize the email body:
 
